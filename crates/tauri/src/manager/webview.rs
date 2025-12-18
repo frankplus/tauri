@@ -518,6 +518,7 @@ impl<R: Runtime> WebviewManager<R> {
     // make sure the directory is created and available to prevent a panic
     if let Some(user_data_dir) = &pending.webview_attributes.data_directory {
       if !user_data_dir.exists() {
+        #[cfg(not(target_env = "ohos"))]
         create_dir_all(user_data_dir)?;
       }
     }
