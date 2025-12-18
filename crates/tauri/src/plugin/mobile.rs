@@ -498,3 +498,18 @@ pub(crate) fn run_command<
 
   Ok(())
 }
+
+#[cfg(target_env = "ohos")]
+pub(crate) fn run_command<
+  R: Runtime,
+  C: AsRef<str>,
+  F: FnOnce(PluginResponse) + Send + Clone + 'static,
+>(
+  _name: &str,
+  _handle: &AppHandle<R>,
+  _command: C,
+  _payload: serde_json::Value,
+  _handler: F,
+) -> Result<(), PluginInvokeError> {
+  Err(PluginInvokeError::UnreachableWebview)
+}

@@ -1298,7 +1298,7 @@ impl<R: Runtime, M: Manager<R>> WebviewWindowBuilder<'_, R, M> {
   #[cfg(all(
     feature = "wry",
     any(
-      target_os = "linux",
+      all(target_os = "linux", not(target_env = "ohos")),
       target_os = "dragonfly",
       target_os = "freebsd",
       target_os = "netbsd",
@@ -1328,7 +1328,7 @@ impl<R: Runtime, M: Manager<R>> WebviewWindowBuilder<'_, R, M> {
   #[cfg(any(
     target_os = "macos",
     windows,
-    target_os = "linux",
+    all(target_os = "linux", not(target_env = "ohos")),
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "netbsd",
@@ -1360,7 +1360,7 @@ impl<R: Runtime, M: Manager<R>> WebviewWindowBuilder<'_, R, M> {
     #[cfg(all(
       feature = "wry",
       any(
-        target_os = "linux",
+        all(target_os = "linux", not(target_env = "ohos")),
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
@@ -1781,7 +1781,7 @@ impl<R: Runtime> WebviewWindow<R> {
   ///
   /// Note that this type can only be used on the main thread.
   #[cfg(any(
-    target_os = "linux",
+    all(target_os = "linux", not(target_env = "ohos")),
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "netbsd",
@@ -1795,7 +1795,7 @@ impl<R: Runtime> WebviewWindow<R> {
   ///
   /// Note that this type can only be used on the main thread.
   #[cfg(any(
-    target_os = "linux",
+    all(target_os = "linux", not(target_env = "ohos")),
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "netbsd",

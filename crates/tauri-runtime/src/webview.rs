@@ -91,12 +91,15 @@ pub struct NewWindowOpener {
   /// The instance of the webview that initiated the new window request.
   ///
   /// This must be set as the related view of the new webview. See [`WebviewAttributes::related_view`].
-  #[cfg(any(
-    target_os = "linux",
-    target_os = "dragonfly",
-    target_os = "freebsd",
-    target_os = "netbsd",
-    target_os = "openbsd",
+  #[cfg(all(
+    any(
+      target_os = "linux",
+      target_os = "dragonfly",
+      target_os = "freebsd",
+      target_os = "netbsd",
+      target_os = "openbsd",
+    ),
+    not(target_env = "ohos")
   ))]
   pub webview: webkit2gtk::WebView,
   /// The instance of the webview that initiated the new window request.
@@ -384,12 +387,15 @@ pub struct WebviewAttributes {
 
   /// Creates a new webview sharing the same web process with the provided webview.
   /// Useful if you need to link a webview to another, for instance when using the [`PendingWebview::new_window_handler`].
-  #[cfg(any(
-    target_os = "linux",
-    target_os = "dragonfly",
-    target_os = "freebsd",
-    target_os = "netbsd",
-    target_os = "openbsd",
+  #[cfg(all(
+    any(
+      target_os = "linux",
+      target_os = "dragonfly",
+      target_os = "freebsd",
+      target_os = "netbsd",
+      target_os = "openbsd",
+    ),
+    not(target_env = "ohos")
   ))]
   pub related_view: Option<webkit2gtk::WebView>,
 
@@ -512,12 +518,15 @@ impl WebviewAttributes {
       input_accessory_view_builder: None,
       #[cfg(windows)]
       environment: None,
-      #[cfg(any(
-        target_os = "linux",
-        target_os = "dragonfly",
-        target_os = "freebsd",
-        target_os = "netbsd",
-        target_os = "openbsd",
+      #[cfg(all(
+        any(
+          target_os = "linux",
+          target_os = "dragonfly",
+          target_os = "freebsd",
+          target_os = "netbsd",
+          target_os = "openbsd",
+        ),
+        not(target_env = "ohos")
       ))]
       related_view: None,
       #[cfg(target_os = "macos")]

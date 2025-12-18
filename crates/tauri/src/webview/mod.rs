@@ -155,7 +155,7 @@ pub struct PlatformWebview(tauri_runtime_wry::Webview);
 impl PlatformWebview {
   /// Returns [`webkit2gtk::WebView`] handle.
   #[cfg(any(
-    target_os = "linux",
+    all(target_os = "linux", not(target_env = "ohos")),
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "netbsd",
@@ -164,7 +164,7 @@ impl PlatformWebview {
   #[cfg_attr(
     docsrs,
     doc(cfg(any(
-      target_os = "linux",
+      all(target_os = "linux", not(target_env = "ohos")),
       target_os = "dragonfly",
       target_os = "freebsd",
       target_os = "netbsd",
@@ -1248,7 +1248,7 @@ fn main() {
   #[cfg(all(
     feature = "wry",
     any(
-      target_os = "linux",
+      all(target_os = "linux", not(target_env = "ohos")),
       target_os = "dragonfly",
       target_os = "freebsd",
       target_os = "netbsd",

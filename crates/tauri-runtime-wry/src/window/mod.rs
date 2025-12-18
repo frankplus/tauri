@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#[cfg(any(
-  target_os = "linux",
-  target_os = "dragonfly",
-  target_os = "freebsd",
-  target_os = "netbsd",
-  target_os = "openbsd"
+#[cfg(all(
+  any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
+  ),
+  not(target_env = "ohos")
 ))]
 mod linux;
 #[cfg(target_os = "macos")]
@@ -51,7 +54,7 @@ pub trait WindowExt {
   );
 }
 
-#[cfg(mobile)]
+#[cfg(any(mobile, target_env = "ohos"))]
 impl WindowExt for tao::window::Window {
   fn set_enabled(&self, _: bool) {}
   fn is_enabled(&self) -> bool {
