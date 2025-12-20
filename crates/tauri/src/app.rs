@@ -1467,6 +1467,9 @@ impl<R: Runtime> Builder<R> {
       invoke_handler: Box::new(|_| false),
       invoke_initialization_script: InvokeInitializationScript {
         process_ipc_message_fn: crate::manager::webview::PROCESS_IPC_MESSAGE_FN,
+        #[cfg(target_env = "ohos")]
+        os_name: "ohos",
+        #[cfg(not(target_env = "ohos"))]
         os_name: std::env::consts::OS,
         fetch_channel_data_command: crate::ipc::channel::FETCH_CHANNEL_DATA_COMMAND,
         invoke_key: &invoke_key.clone(),

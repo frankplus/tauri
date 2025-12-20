@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-;(function () {
+; (function () {
   /**
    * A runtime generated key to ensure an IPC call comes from an initialized frame.
    *
@@ -17,7 +17,7 @@
   let customProtocolIpcFailed = false
 
   // on Android we never use it because Android does not have support to reading the request body
-  const canUseCustomProtocol = osName !== 'android'
+  const canUseCustomProtocol = osName !== 'android' && osName !== 'ohos'
 
   function sendIpcMessage(message) {
     const { cmd, callback, error, payload, options } = message
