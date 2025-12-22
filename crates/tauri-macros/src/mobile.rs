@@ -72,6 +72,9 @@ pub fn entry_point(_attributes: TokenStream, item: TokenStream) -> TokenStream {
 
       #wrapper
 
+      #[cfg(target_env = "ohos")]
+      ::tauri::ohos_binding!(#wrapper_name);
+
       fn _start_app() {
         #[cfg(target_os = "ios")]
         ::tauri::log_stdout();

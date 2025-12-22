@@ -114,6 +114,7 @@ pub mod tray;
 pub use tauri_utils as utils;
 
 pub use http;
+pub use log;
 
 /// A Tauri [`Runtime`] wrapper around wry.
 #[cfg(feature = "wry")]
@@ -182,10 +183,81 @@ macro_rules! android_binding {
   };
 }
 
+#[cfg(all(feature = "wry", target_env = "ohos"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "wry", target_env = "ohos"))))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! ohos_binding {
+  ($main:ident) => {
+    use ::tauri::napi_derive::napi;
+    use ::tauri::napi;
+    use ::tauri::napi::{Env, JsObject, JsFunction, Result, NapiRaw};
+
+    #[napi]
+    pub fn ohos_init() -> Result<()> {
+        ::tauri::log::info!("Initializing Tauri App");
+        std::thread::spawn(move || {
+            $main();
+        });
+        Ok(())
+    }
+
+    #[napi]
+    pub fn register_xcomponent(env: Env, item: JsObject) -> Result<()> {
+        let mut native_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
+        
+        let target = if let Ok(xcomp) = item.get_named_property::<JsObject>("__NATIVE_XCOMPONENT_OBJ__") {
+            xcomp
+        } else {
+            item
+        };
+
+        let status = unsafe { ::tauri::napi::sys::napi_unwrap(env.raw(), target.raw(), &mut native_ptr) };
+        if status != ::tauri::napi::sys::Status::napi_ok {
+             return Err(::tauri::napi::Error::new(::tauri::napi::Status::GenericFailure, "Failed to unwrap XComponent"));
+        }
+        
+        unsafe { ::tauri::tao::platform::openharmony::register_xcomponent(native_ptr); }
+        Ok(())
+    }
+
+    #[napi]
+    pub fn register_webview(callback: JsFunction) -> Result<()> {
+        let tsfn = callback.create_threadsafe_function(
+            0,
+            |ctx| ctx.env.create_string_from_std(ctx.value).map(|v| vec![v])
+        )?;
+        ::tauri::wry::openharmony::register_script_executor(tsfn);
+        Ok(())
+    }
+
+    #[napi]
+    pub fn resolve_request(id: String, url: String) -> Option<String> {
+        if let Some(content) = ::tauri::wry::openharmony::handle_request(&id, url.clone()) {
+            return Some(String::from_utf8_lossy(&content).to_string());
+        } else {
+            ::tauri::log::warn!("Unresolved request: {}", url);
+        }
+        None
+    }
+
+    #[napi]
+    pub fn on_ipc_message(id: String, msg: String) {
+        ::tauri::log::info!("IPC message received from {}: {}", id, msg);
+        ::tauri::wry::openharmony::on_ipc_message(&id, msg);
+    }
+  };
+}
+
+#[cfg(all(feature = "wry", target_env = "ohos"))]
+pub use napi;
+#[cfg(all(feature = "wry", target_env = "ohos"))]
+pub use napi_derive;
+
 #[cfg(all(feature = "wry", target_os = "android"))]
 #[doc(hidden)]
 pub use plugin::mobile::{handle_android_plugin_response, send_channel_data};
-#[cfg(all(feature = "wry", target_os = "android"))]
+#[cfg(any(target_os = "android", target_env = "ohos"))]
 #[doc(hidden)]
 pub use tauri_runtime_wry::{tao, wry};
 

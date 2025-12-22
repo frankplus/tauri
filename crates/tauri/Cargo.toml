@@ -161,6 +161,13 @@ objc2-ui-kit = { version = "0.3.0", default-features = false, features = [
   "UIView",
 ] }
 
+[target."cfg(target_env = \"ohos\")".dependencies]
+ohos-sys = { version = "0.3", features = ["xcomponent"] }
+hilog = "0.2.2"
+napi = { version = "2.14", features = ["compat-mode", "napi4"] }
+napi-derive = "2.14"
+log = "0.4"
+
 [build-dependencies]
 glob = "0.3"
 heck = "0.5"
