@@ -56,6 +56,7 @@ impl ConfigFormat {
         Target::Linux => "tauri.linux.conf.json",
         Target::Android => "tauri.android.conf.json",
         Target::Ios => "tauri.ios.conf.json",
+        Target::OpenHarmony => "tauri.ohos.conf.json",
       },
       Self::Json5 => match target {
         Target::MacOS => "tauri.macos.conf.json5",
@@ -63,6 +64,7 @@ impl ConfigFormat {
         Target::Linux => "tauri.linux.conf.json5",
         Target::Android => "tauri.android.conf.json5",
         Target::Ios => "tauri.ios.conf.json5",
+        Target::OpenHarmony => "tauri.ohos.conf.json5",
       },
       Self::Toml => match target {
         Target::MacOS => "Tauri.macos.toml",
@@ -70,6 +72,7 @@ impl ConfigFormat {
         Target::Linux => "Tauri.linux.toml",
         Target::Android => "Tauri.android.toml",
         Target::Ios => "Tauri.ios.toml",
+        Target::OpenHarmony => "Tauri.ohos.toml",
       },
     }
   }

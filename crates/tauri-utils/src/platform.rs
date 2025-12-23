@@ -37,6 +37,9 @@ pub enum Target {
   /// iOS.
   #[serde(rename = "iOS")]
   Ios,
+  /// OpenHarmony.
+  #[serde(rename = "openHarmony")]
+  OpenHarmony,
 }
 
 impl Display for Target {
@@ -50,6 +53,7 @@ impl Display for Target {
         Self::Linux => "linux",
         Self::Android => "android",
         Self::Ios => "iOS",
+        Self::OpenHarmony => "openHarmony",
       }
     )
   }
@@ -66,6 +70,8 @@ impl Target {
       Self::Android
     } else if target.contains("ios") {
       Self::Ios
+    } else if target.contains("ohos") {
+      Self::OpenHarmony
     } else {
       Self::Linux
     }
@@ -79,6 +85,8 @@ impl Target {
       Self::Windows
     } else if cfg!(target_os = "ios") {
       Self::Ios
+    } else if cfg!(target_env = "ohos") {
+      Self::OpenHarmony
     } else if cfg!(target_os = "android") {
       Self::Android
     } else {
@@ -88,7 +96,7 @@ impl Target {
 
   /// Whether the target is mobile or not.
   pub fn is_mobile(&self) -> bool {
-    matches!(self, Target::Android | Target::Ios)
+    matches!(self, Target::Android | Target::Ios | Target::OpenHarmony)
   }
 
   /// Whether the target is desktop or not.
@@ -389,6 +397,7 @@ mod build {
         Self::Windows => quote! { #prefix::Windows },
         Self::Android => quote! { #prefix::Android },
         Self::Ios => quote! { #prefix::Ios },
+        Self::OpenHarmony => quote! { #prefix::OpenHarmony },
       });
     }
   }

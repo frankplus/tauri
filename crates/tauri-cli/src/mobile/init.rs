@@ -164,6 +164,20 @@ pub fn exec(
       )?;
       app
     }
+
+    Target::OpenHarmony => {
+        let (config, metadata) =
+          super::openharmony::get_config(&app, tauri_config_, None, &Default::default());
+        map.insert("openharmony", &config);
+        super::openharmony::project::gen(
+          &config,
+          &metadata,
+          (handlebars, map),
+          wrapper,
+          skip_targets_install,
+        )?;
+        app
+    }
   };
 
   Report::victory(

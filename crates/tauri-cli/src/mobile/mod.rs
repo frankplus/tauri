@@ -50,6 +50,7 @@ pub mod android;
 mod init;
 #[cfg(target_os = "macos")]
 pub mod ios;
+pub mod openharmony;
 
 const MIN_DEVICE_MATCH_SCORE: isize = 0;
 
@@ -98,6 +99,7 @@ pub enum Target {
   Android,
   #[cfg(target_os = "macos")]
   Ios,
+  OpenHarmony,
 }
 
 impl Target {
@@ -106,6 +108,7 @@ impl Target {
       Self::Android => "Android Studio",
       #[cfg(target_os = "macos")]
       Self::Ios => "Xcode",
+      Self::OpenHarmony => "DevEco Studio",
     }
   }
 
@@ -114,6 +117,7 @@ impl Target {
       Self::Android => "android",
       #[cfg(target_os = "macos")]
       Self::Ios => "ios",
+      Self::OpenHarmony => "ohos",
     }
   }
 
@@ -122,6 +126,7 @@ impl Target {
       Self::Android => "android-studio-script",
       #[cfg(target_os = "macos")]
       Self::Ios => "xcode-script",
+      Self::OpenHarmony => "ohos-script",
     }
   }
 
@@ -130,6 +135,7 @@ impl Target {
       Self::Android => tauri_utils::platform::Target::Android,
       #[cfg(target_os = "macos")]
       Self::Ios => tauri_utils::platform::Target::Ios,
+      Self::OpenHarmony => tauri_utils::platform::Target::OpenHarmony,
     }
   }
 }
@@ -446,6 +452,7 @@ pub fn get_app(target: Target, config: &TauriConfig, interface: &AppInterface) -
     Target::Android => config.identifier.replace('-', "_"),
     #[cfg(target_os = "macos")]
     Target::Ios => config.identifier.replace('_', "-"),
+    Target::OpenHarmony => config.identifier.clone(),
   };
 
   if identifier.is_empty() {
@@ -525,6 +532,9 @@ fn ensure_init(
         project_outdated_reasons
           .push("you have modified your \"identifier\" in the Tauri configuration");
       }
+    }
+    Target::OpenHarmony => {
+       // OpenHarmony checks
     }
     #[cfg(target_os = "macos")]
     Target::Ios => {

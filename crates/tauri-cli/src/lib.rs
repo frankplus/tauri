@@ -95,6 +95,7 @@ pub enum RunMode {
   #[cfg(target_os = "macos")]
   Ios,
   Android,
+  Ohos,
 }
 
 impl Display for RunMode {
@@ -107,6 +108,7 @@ impl Display for RunMode {
         #[cfg(target_os = "macos")]
         Self::Ios => "iOS",
         Self::Android => "android",
+        Self::Ohos => "ohos",
       }
     )
   }
@@ -156,6 +158,7 @@ enum Commands {
   Android(mobile::android::Cli),
   #[cfg(target_os = "macos")]
   Ios(mobile::ios::Cli),
+  Ohos(mobile::openharmony::Cli),
   /// Migrate from v1 to v2
   Migrate,
   Info(info::Options),
@@ -290,6 +293,7 @@ where
     Commands::Android(c) => mobile::android::command(c, cli.verbose)?,
     #[cfg(target_os = "macos")]
     Commands::Ios(c) => mobile::ios::command(c, cli.verbose)?,
+    Commands::Ohos(c) => mobile::openharmony::command(c, cli.verbose)?,
     Commands::Migrate => migrate::command()?,
     Commands::Inspect(cli) => inspect::command(cli)?,
   }
