@@ -1,0 +1,11 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Entry Module",
+  "main": "",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "lib{{lib-name}}.so": "file:./src/main/cpp/types/lib{{lib-name}}"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "lib{{lib-name}}.so",
+  "types": "./Index.d.ts",
+  "version": "1.0.0",
+  "description": "Tauri Basic App Native Module"
+}

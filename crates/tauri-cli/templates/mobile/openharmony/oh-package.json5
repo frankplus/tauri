@@ -1,0 +1,10 @@
+{
+  "modelVersion": "5.0.0",
+  "description": "Tauri OpenHarmony Example config",
+  "dependencies": {
+  },
+  "devDependencies": {
+      "@ohos/hvigor-ohos-plugin": "5.18.5",
+      "@ohos/hvigor": "5.18.5"
+  }
+}
