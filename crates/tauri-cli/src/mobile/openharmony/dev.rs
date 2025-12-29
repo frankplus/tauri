@@ -1,10 +1,8 @@
 use super::{
-  ensure_init, get_app, MobileTarget,
+  get_app, MobileTarget,
 };
 use crate::{
-  dev::Options as DevOptions,
   helpers::{
-    app_paths::tauri_dir,
     config::{get as get_tauri_config},
   },
   interface::{AppInterface, Interface},
@@ -12,9 +10,8 @@ use crate::{
 };
 use clap::{ArgAction, Parser};
 use cargo_mobile2::{
-  opts::{NoiseLevel, Profile},
+  opts::{NoiseLevel},
 };
-use std::env::set_current_dir;
 
 #[derive(Debug, Clone, Parser)]
 #[clap(
@@ -40,6 +37,32 @@ pub struct Options {
 }
 
 pub fn command(options: Options, noise_level: NoiseLevel) -> Result<()> {
+    // 0. Resolve app info to get identifier
+    // We need to resolve app paths before getting the config
+    crate::helpers::app_paths::resolve();
+
+    let tauri_config = get_tauri_config(
+        tauri_utils::platform::Target::OpenHarmony,
+        &options
+            .config
+            .iter()
+            .map(|conf| &conf.0)
+            .collect::<Vec<_>>(),
+    )?;
+
+    let (interface, app) = {
+        let tauri_config_guard = tauri_config.lock().unwrap();
+        let tauri_config_ = tauri_config_guard.as_ref().unwrap();
+
+        let interface =
+            AppInterface::new(tauri_config_, Some("aarch64-unknown-linux-ohos".into()))?;
+
+        let app = get_app(MobileTarget::OpenHarmony, tauri_config_, &interface);
+        (interface, app)
+    };
+
+    let bundle_identifier = app.identifier();
+
     // 1. Run build
     let build_options = super::build::Options {
         debug: options.debug,
@@ -48,22 +71,25 @@ pub fn command(options: Options, noise_level: NoiseLevel) -> Result<()> {
         ci: options.ci,
         args: options.args,
     };
-    
-    let hap_path = super::build::command(build_options, noise_level)?;
-    
+
+    let hap_path = super::build::run(build_options, &tauri_config, &interface, &app, noise_level)?;
+
     // 2. Deploy and Run
     println!("Deploying and running OpenHarmony project...");
-    
+
     let grep_cmd = String::new(); // TODO: Support grep pattern if passed in options (not currently in Options struct)
 
     let hap_path_str = hap_path.to_string_lossy();
-    
-    let shell_cmd = format!(r#"
+
+    let shell_cmd = format!(
+        r#"
 hdc install {} && \
 hdc shell hilog -r && \
-hdc shell aa start -a EntryAbility -b com.tauri.basicapp && \
-pid=$(timeout 0.5 hdc track-jpid | awk '$2=="com.tauri.basicapp"{{print $1}}') && \
-hdc shell hilog -P "$pid"{}"#, hap_path_str, grep_cmd);
+hdc shell aa start -a EntryAbility -b {} && \
+pid=$(timeout 0.5 hdc track-jpid | awk '$2=="{}"{{print $1}}') && \
+hdc shell hilog -P "$pid"{}"#,
+        hap_path_str, bundle_identifier, bundle_identifier, grep_cmd
+    );
 
     let status = std::process::Command::new("sh")
         .arg("-c")
@@ -74,6 +100,6 @@ hdc shell hilog -P "$pid"{}"#, hap_path_str, grep_cmd);
     if !status.success() {
         return Err(crate::Error::GenericError("Device command failed".into()));
     }
-    
+
     Ok(())
 }
