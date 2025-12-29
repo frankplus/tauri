@@ -173,15 +173,22 @@ pub fn command(options: Options, noise_level: NoiseLevel) -> Result<PathBuf> {
     }
 
     // 5. Run hvigorw assembleHap
-    let hvigorw_cmd = if let Ok(cmd_tools) = std::env::var("OHOS_CMD_TOOLS") {
-         let path = std::path::PathBuf::from(cmd_tools).join("bin/hvigorw");
-         if path.exists() {
-             path.to_string_lossy().to_string()
-         } else {
-             "hvigorw".to_string()
-         }
-    } else {
-        "hvigorw".to_string()
+    let hvigorw_cmd = {
+        let env_path = std::env::var("OHOS_CMD_TOOLS")
+            .ok()
+            .map(|p| PathBuf::from(p).join("bin/hvigorw"))
+            .filter(|p| p.exists())
+            .map(|p| p.to_string_lossy().to_string());
+
+        if let Some(path) = env_path {
+            path
+        } else if which::which("hvigorw").is_ok() {
+            "hvigorw".to_string()
+        } else {
+            return Err(crate::Error::GenericError(
+                "hvigorw not found. Please set OHOS_CMD_TOOLS or add hvigorw to your PATH.".into(),
+            ));
+        }
     };
     
     println!("Running {} assembleHap...", hvigorw_cmd);
