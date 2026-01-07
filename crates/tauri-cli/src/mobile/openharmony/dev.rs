@@ -31,6 +31,9 @@ pub struct Options {
   /// Skip prompting for values
   #[clap(long, env = "CI")]
   pub ci: bool,
+  /// Filter logs using grep
+  #[clap(short, long)]
+  pub grep: Option<String>,
   /// Command line arguments passed to the runner.
   #[clap(last(true))]
   pub args: Vec<String>,
@@ -77,7 +80,10 @@ pub fn command(options: Options, noise_level: NoiseLevel) -> Result<()> {
     // 2. Deploy and Run
     println!("Deploying and running OpenHarmony project...");
 
-    let grep_cmd = String::new(); // TODO: Support grep pattern if passed in options (not currently in Options struct)
+    let grep_cmd = options
+        .grep
+        .map(|grep| format!(" | grep -E \"{}\"", grep.replace('"', "\\\"")))
+        .unwrap_or_default();
 
     let hap_path_str = hap_path.to_string_lossy();
 
@@ -87,7 +93,7 @@ hdc install {} && \
 hdc shell hilog -r && \
 hdc shell aa start -a EntryAbility -b {} && \
 pid=$(timeout 0.5 hdc track-jpid | awk '$2=="{}"{{print $1}}') && \
-hdc shell hilog -P "$pid"{}"#,
+hdc shell hilog -P "$pid" {}"#,
         hap_path_str, bundle_identifier, bundle_identifier, grep_cmd
     );
 
