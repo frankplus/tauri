@@ -193,6 +193,38 @@ pub fn run(
     );
   }
 
+  // 4.5 Copy Assets to rawfile
+  let tauri_config_guard = tauri_config.lock().unwrap();
+  let config = tauri_config_guard.as_ref().unwrap();
+
+  if let Some(dist) = &config.build.frontend_dist {
+      match dist {
+          tauri_utils::config::FrontendDist::Directory(path) => {
+             let abs_path = if path.is_absolute() {
+                 path.clone()
+             } else {
+                 tauri_path.join(path)
+             };
+
+             if abs_path.exists() {
+                 let rawfile_dir = openharmony_dir.join("entry/src/main/resources/rawfile");
+                 if rawfile_dir.exists() {
+                     std::fs::remove_dir_all(&rawfile_dir).expect("Failed to clean rawfile directory");
+                 }
+                 std::fs::create_dir_all(&rawfile_dir).expect("Failed to create rawfile directory");
+                 
+                 copy_dir_all(&abs_path, &rawfile_dir).expect("Failed to copy assets");
+                 println!("Copied assets from {} to {}", abs_path.display(), rawfile_dir.display());
+             } else {
+                 eprintln!("Warning: frontendDist path {} does not exist", abs_path.display());
+             }
+          }
+          _ => {
+              println!("Note: frontendDist is a URL or other type, skipping rawfile copy.");
+          }
+      }
+  }
+
   // 5. Run hvigorw assembleHap
   let hvigorw_cmd = {
     let env_path = std::env::var("OHOS_CMD_TOOLS")
@@ -224,4 +256,18 @@ pub fn run(
   }
 
   Ok(openharmony_dir.join("entry/build/default/outputs/default/entry-default-signed.hap"))
+}
+
+fn copy_dir_all(src: &std::path::Path, dst: &std::path::Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(&entry.path(), &dst.join(entry.file_name()))?;
+        } else {
+            std::fs::copy(entry.path(), dst.join(entry.file_name()))?;
+        }
+    }
+    Ok(())
 }

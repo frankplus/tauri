@@ -232,9 +232,9 @@ macro_rules! ohos_binding {
     }
 
     #[napi]
-    pub fn resolve_request(id: String, url: String) -> Option<String> {
+    pub fn resolve_request(id: String, url: String) -> Option<Vec<u8>> {
         if let Some(content) = ::tauri::wry::openharmony::handle_request(&id, url.clone()) {
-            return Some(String::from_utf8_lossy(&content).to_string());
+            return Some(content);
         } else {
             ::tauri::log::warn!("Unresolved request: {}", url);
         }
