@@ -21,6 +21,16 @@ export default class EntryAbility extends UIAbility {
 
     onWindowStageCreate(windowStage: window.WindowStage) {
         console.info('EntryAbility onWindowStageCreate');
+        
+        // Notify Rust
+        try {
+            if ({{lib-name}}.onWindowStageCreate) {
+                {{lib-name}}.onWindowStageCreate();
+            }
+        } catch (e) {
+            console.error('Failed to call onWindowStageCreate:', e);
+        }
+
         windowStage.loadContent('pages/Index', (err, data) => {
             if (err.code) {
                 console.error('Failed to load the content. Cause: ' + JSON.stringify(err) ?? '');
@@ -28,5 +38,28 @@ export default class EntryAbility extends UIAbility {
             }
             console.info('Succeeded in loading the content. Data: ' + JSON.stringify(data) ?? '');
         });
+
+        windowStage.on('windowStageEvent', (data) => {
+            try {
+                if (data === window.WindowStageEventType.ACTIVE) {
+                    if ({{lib-name}}.onWindowStageFocus) {{lib-name}}.onWindowStageFocus();
+                } else if (data === window.WindowStageEventType.INACTIVE) {
+                    if ({{lib-name}}.onWindowStageBlur) {{lib-name}}.onWindowStageBlur();
+                }
+            } catch (e) {
+                console.error('Failed to handle windowStageEvent:', e);
+            }
+        });
+    }
+
+    onWindowStageDestroy() {
+        console.info('EntryAbility onWindowStageDestroy');
+        try {
+            if ({{lib-name}}.onWindowStageDestroy) {
+                {{lib-name}}.onWindowStageDestroy();
+            }
+        } catch (e) {
+            console.error('Failed to call onWindowStageDestroy:', e);
+        }
     }
 }

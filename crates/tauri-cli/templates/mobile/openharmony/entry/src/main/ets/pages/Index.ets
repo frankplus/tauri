@@ -38,32 +38,7 @@ struct Index {
 
   build() {
     Stack() {
-      // XComponent to drive the native event loop
-      XComponent({
-        id: 'tauri_xcomponent',
-        type: 'surface',
-        libraryname: '{{lib-name}}'
-      })
-      .onLoad((context) => {
-        console.info('XComponent onLoad fired');
-        console.info('{{lib-name}} keys: ' + JSON.stringify(Object.keys({{lib-name}})));
-        if ({{lib-name}}.registerXcomponent) {
-            {{lib-name}}.registerXcomponent(context);
-        } else {
-            console.error('registerXcomponent is not defined on generic {{lib-name}} object');
-            // Fallback check for snake_case just in case, though unlikely with napi-rs defaults
-            if ({{lib-name}}.register_xcomponent) {
-                 console.warn('Found register_xcomponent (snake_case), using that instead.');
-                 {{lib-name}}.register_xcomponent(context);
-            }
-        }
-      })
-      .onDestroy(() => {
-        console.info('XComponent onDestroy');
-      })
-      .width('100%')
-      .height('100%')
-      .hitTestBehavior(HitTestMode.None) // Let touches pass through to Web? Or handled by Rust?
+      // Web component takes the full size
 
       Web({ src: "https://tauri.localhost/index.html", controller: this.controller })
         .domStorageAccess(true)

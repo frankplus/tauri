@@ -203,22 +203,27 @@ macro_rules! ohos_binding {
     }
 
     #[napi]
-    pub fn register_xcomponent(env: Env, item: JsObject) -> Result<()> {
-        let mut native_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
-        
-        let target = if let Ok(xcomp) = item.get_named_property::<JsObject>("__NATIVE_XCOMPONENT_OBJ__") {
-            xcomp
-        } else {
-            item
-        };
+    pub fn on_window_stage_create() {
+        ::tauri::log::info!("WindowStage Create");
+        ::tauri::tao::platform::openharmony::on_window_created();
+    }
 
-        let status = unsafe { ::tauri::napi::sys::napi_unwrap(env.raw(), target.raw(), &mut native_ptr) };
-        if status != ::tauri::napi::sys::Status::napi_ok {
-             return Err(::tauri::napi::Error::new(::tauri::napi::Status::GenericFailure, "Failed to unwrap XComponent"));
-        }
-        
-        unsafe { ::tauri::tao::platform::openharmony::register_xcomponent(native_ptr); }
-        Ok(())
+    #[napi]
+    pub fn on_window_stage_destroy() {
+        ::tauri::log::info!("WindowStage Destroy");
+        ::tauri::tao::platform::openharmony::on_window_destroyed();
+    }
+
+    #[napi]
+    pub fn on_window_stage_focus() {
+        ::tauri::log::info!("WindowStage Focus");
+        ::tauri::tao::platform::openharmony::on_window_focus();
+    }
+
+    #[napi]
+    pub fn on_window_stage_blur() {
+        ::tauri::log::info!("WindowStage Blur");
+        ::tauri::tao::platform::openharmony::on_window_blur();
     }
 
     #[napi]
