@@ -246,6 +246,58 @@ macro_rules! ohos_binding {
         ::tauri::log::info!("IPC message received from {}: {}", id, msg);
         ::tauri::wry::openharmony::on_ipc_message(&id, msg);
     }
+
+    // --- Glue Code for NAPI Registration ---
+
+    #[repr(C)]
+    struct NapiModule {
+        nm_version: i32,
+        nm_flags: u32,
+        nm_filename: *const std::ffi::c_char,
+        nm_register_func: extern "C" fn(env: ::tauri::napi::sys::napi_env, exports: ::tauri::napi::sys::napi_value) -> ::tauri::napi::sys::napi_value,
+        nm_modname: *const std::ffi::c_char,
+        nm_priv: *mut std::ffi::c_void,
+        reserved: [*mut std::ffi::c_void; 4],
+    }
+
+    #[no_mangle]
+    pub extern "C" fn Init(env: ::tauri::napi::sys::napi_env, exports: ::tauri::napi::sys::napi_value) -> ::tauri::napi::sys::napi_value {
+        unsafe { ::tauri::napi::bindgen_prelude::napi_register_module_v1(env, exports) }
+    }
+
+    #[no_mangle]
+    pub extern "C" fn RegisterModule() {
+        let mod_name = std::ffi::CString::new(concat!("lib", env!("CARGO_CRATE_NAME"))).unwrap();
+        
+        // We leak the CString to keep the pointer valid for the lifetime of the program
+        let mod_name_ptr = mod_name.into_raw(); 
+
+        let mut module = Box::new(NapiModule {
+            nm_version: 1,
+            nm_flags: 0,
+            nm_filename: std::ptr::null(),
+            nm_register_func: Init,
+            nm_modname: mod_name_ptr,
+            nm_priv: std::ptr::null_mut(),
+            reserved: [std::ptr::null_mut(); 4],
+        });
+
+        // We leak the box so the struct stays in memory (static lifetime effectively)
+        let module_ptr = Box::leak(module);
+
+        unsafe {
+             ::tauri::napi::sys::napi_module_register(module_ptr as *mut _ as *mut ::tauri::napi::sys::napi_module);
+        }
+    }
+
+    #[link_section = ".init_array"]
+    #[used]
+    static __INIT: extern "C" fn() = RegisterModule;
+
+    // Keepalive to ensure the module is linked
+    #[no_mangle]
+    pub extern "C" fn glue_keepalive() {}
+
   };
 }
 
