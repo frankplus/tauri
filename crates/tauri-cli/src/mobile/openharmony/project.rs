@@ -33,11 +33,12 @@ pub fn gen(
     .join("gen")
     .join("openharmony");
 
-  let (lib_name_str, identifier_str) = {
+  let (lib_name_str, identifier_str, project_root_str) = {
       let app = map.inner().get("app").and_then(|v| v.as_object()).context("app config missing")?;
       let lib_name = app.get("lib-name").and_then(|v| v.as_str()).unwrap_or("app");
       let identifier = app.get("identifier").and_then(|v| v.as_str()).unwrap_or("com.example.app");
-      (lib_name.to_string(), identifier.to_string())
+      let project_root = app.get("root-dir").and_then(|v| v.as_str()).unwrap_or(".");
+      (lib_name.to_string(), identifier.to_string(), project_root.to_string())
   };
 
   map.insert("lib-name", lib_name_str.clone());
@@ -52,6 +53,30 @@ pub fn gen(
     &mut |path| generate_out_file(&path, &dest, &lib_name_str, &mut created_dirs),
   )
   .with_context(|| "failed to process template")?;
+
+  // Copy icons
+  let project_root = Path::new(&project_root_str);
+  let icons_dir = project_root.join("icons");
+  let icon_candidates = ["icon.png", "128x128@2x.png", "128x128.png"];
+  let mut source_icon = None;
+  for candidate in icon_candidates {
+      let candidate_path = icons_dir.join(candidate);
+      if candidate_path.exists() {
+          source_icon = Some(candidate_path);
+          break;
+      }
+  }
+  
+  if let Some(icon_path) = source_icon {
+      let media_dirs = [
+          dest.join("AppScope/resources/base/media"),
+          dest.join("entry/src/main/resources/base/media"),
+      ];
+      for media_dir in media_dirs {
+          fs::create_dir_all(&media_dir).context("failed to create media dir")?;
+          fs::copy(&icon_path, media_dir.join("app_icon.png")).context("failed to copy icon")?;
+      }
+  }
 
   Ok(())
 }
